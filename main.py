@@ -182,17 +182,12 @@ for i in range(1000):
                 
                 upper_band = current_delta + semiband
                 lower_band = current_delta - semiband
-                if upper_band > -0.01 and current_delta < -0.01:
-                    upper_band = -0.01
-                elif current_delta > -0.01:
+                if upper_band > 0:
                     upper_band = 0
-                    lower_band = -0.01
-                elif lower_band < -0.99 and current_delta > -0.99:
-                    lower_band = -0.99
-                elif current_delta < -0.99:
-                    upper_band = -0.99
+                elif lower_band < -1:
                     lower_band = -1
                 interest_days = 0
+
 
                     
             elif current_delta < lower_band:
@@ -208,15 +203,9 @@ for i in range(1000):
                 upper_band = current_delta + semiband
                 lower_band = current_delta - semiband
                     
-                if upper_band > -0.01 and current_delta < -0.01:
-                    upper_band = -0.01
-                elif current_delta > -0.01:
+                if upper_band > 0:
                     upper_band = 0
-                    lower_band = -0.01
-                elif lower_band < -0.99 and current_delta > -0.99:
-                    lower_band = -0.99
-                elif current_delta < -0.99:
-                    upper_band = -0.99
+                elif lower_band < -1:
                     lower_band = -1
                 interest_days = 0            
 
