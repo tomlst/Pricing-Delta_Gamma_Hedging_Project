@@ -9,7 +9,7 @@ import random
 import numpy as np
 from scipy.stats import norm
 
-random.seed(1)
+random.seed(123)
 class DGHedging:
     def __init__(self,T,S0,sigma,mu,rf,N):
         self.T = T
@@ -41,14 +41,25 @@ class DGHedging:
     def putDelta(self, St, t):
         return norm.cdf(self.dplus(St, t)) - 1
     
+    def callDelta(self, St, t):
+        return norm.cdf(self.dplus(St, t))
+    
     def putPrice(self, St, t):
         return self.K * np.exp(-self.rf*(self.T - t)) * norm.cdf(- self.dminus(St, t)) - St * norm.cdf(-self.dplus(St, t))
     
-    def callPrice(self, St, t):
-        return St * norm.cdf(self.dplus(St, t)) - self.K * np.exp(-self.rf*(self.T - t)) * norm.cdf(self.dminus(St, t))
+    def callPrice(self, St, maturity, t):
+        return St * norm.cdf(self.dplusCall(St,0.5, t)) - self.K * np.exp(-self.rf*(maturity - t)) * norm.cdf(self.dminusCall(St, 0.5, t))
     
-    def Gamma(self, St, t):
-        return (norm.pdf(self.dplus(St, t)))/(self.sigma*St*np.sqrt(self.T-t))
+    def dplusCall(self, St, maturity,t):
+        return (np.log(St/self.K) + ((self.rf + 0.5 * self.sigma**2) * (maturity - t))) \
+    /(self.sigma * np.sqrt(maturity - t))
+    
+    def dminusCall(self, St, maturity,t):
+        return (np.log(St/self.K) + ((self.rf - 0.5 * self.sigma**2) * (maturity - t))) \
+    /(self.sigma * np.sqrt(maturity - t))
+    
+    def Gamma(self, St, t, maturity):
+        return (norm.pdf(self.dplus(St, t)))/(self.sigma*St*np.sqrt(maturity-t))
     
     def transactionfee(self, changeDelta, changeOption):
         return np.abs(changeDelta) * 0.005 + np.abs(changeOption) * 0.01
@@ -63,3 +74,11 @@ class DGHedging:
     
     def clientCharge(self, cVar):
         return - cVar - 0.02 + self.putPrice(100, 0)
+    
+    def GammaSet(self,St,t):
+        #put_gamma,call_gamma,call_position,call_price,put_delta,call_delta,stock_position
+        put_gamma = self.Gamma(St, t, 0.25)
+        call_gamma = self.Gamma(St, t, 0.5)
+        call_position = put_gamma / call_gamma
+        put_delta = self.putDelta(St, t)
+        return  self.Gamma(St, t, 0.25), self.Gamma(St, t, 0.5), put_gamma / call_gamma, self.callPrice(St, 0.5, t),self.putDelta(St, t), self.callDelta(St, t), put_delta - call_position * self.callDelta(St, t)
