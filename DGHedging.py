@@ -9,7 +9,7 @@ import random
 import numpy as np
 from scipy.stats import norm
 
-random.seed(123)
+random.seed(1)
 class DGHedging:
     def __init__(self,T,S0,sigma,mu,rf,N):
         self.T = T
@@ -20,11 +20,11 @@ class DGHedging:
         self.K = S0
         self.stockPriceArray = []
         self.N = N
-        self.dt = 1/N
+        self.dt = T/N
         
     def StockPriceSim(self):
         St = self.S0
-        for i in np.linspace(0, self.T,91):
+        for i in np.linspace(0, self.T,self.N+1):
             dWt = random.normalvariate(0, np.sqrt(self.dt))
             self.stockPriceArray.append(St)
             St = St + St * self.mu*self.dt + St * self.sigma*dWt
@@ -53,8 +53,8 @@ class DGHedging:
     def transactionfee(self, changeDelta, changeOption):
         return np.abs(changeDelta) * 0.005 + np.abs(changeOption) * 0.01
     
-    def getBankReturn(self, money):
-        return money * np.exp(self.rf*self.dt)
+    def getBankReturn(self, money,days):
+        return money * np.exp(self.rf*self.dt*days)
     
     def cVar(self, final_pnl):
         tenpercentile = np.quantile(final_pnl,0.1)
