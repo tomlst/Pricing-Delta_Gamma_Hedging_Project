@@ -290,13 +290,15 @@ fig, axs = plt.subplots(4, 1, figsize=(10,40))
 
 figIndex = -1
 
-semibandlist = [0.2/2, 0.1/2, 0.05/2, 0.02/2]
+semibandlist = [0.1/2, 0.05/2, 0.02/2, 0.01/2]
+
+res_array = []
 
 for semiband in semibandlist:
     money_account = 0
     final_pnl = []
     figIndex += 1
-    for i in range(500):
+    for i in range(10000):
         basemodel = DGHedging(T,S0,sigma,mu,rf,N)
         St = basemodel.StockPriceSim()
         port_delta = []
@@ -360,11 +362,30 @@ for semiband in semibandlist:
             print(current_delta,St[-1],money_account,i,k)
         print(i)
     
-    axs[figIndex].hist(final_pnl,bins=20)
+    axs[figIndex].hist(final_pnl,bins=50)
+    res_array.append(final_pnl)
     plt.subplot(4,1,figIndex+1).set_title(f'Band size: {semiband*2}')
-    axs[figIndex].set_xticks(np.linspace(-2, 2,41)) 
-    axs[figIndex].set_xticklabels([round(i,2) for i in np.linspace(-2, 2,41)],rotation=45)
+    axs[figIndex].set_xticks(np.linspace(-3, 2,26)) 
+    axs[figIndex].set_xticklabels([round(i,2) for i in np.linspace(-3, 2,26)],rotation=45)
+    
+    axs[figIndex].set_yticks(np.linspace(0, 1200,13)) 
     
     print(basemodel.clientCharge(basemodel.cVar(final_pnl)))
+
+'''
+count = -1
+plt.figure(figsize=(16,8))
+
+for i in res_array:
+    count += 1
+    a = 0.3
+    if count == 0:
+        a = 1
+    plt.hist(i,bins=100,alpha=a)
+
+    axs[figIndex].set_xticks(np.linspace(-3, 2,26)) 
+    axs[figIndex].set_xticklabels([i for i in np.linspace(-3, 2,26)],rotation=45)
+    plt.legend([0.1,0.05,0.02,0.01,],loc="upper right",prop={'size': 10})
+'''
 
 fig.show()
