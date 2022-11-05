@@ -134,15 +134,59 @@ plt.hist(final_pnl,bins=20)
 print(basemodel.clientCharge(basemodel.cVar(final_pnl)))
 '''
 
+'''
+#Q2 Delta-Gamma time based Hedging 
+money_account = 0
+final_pnl = []
 
+for i in range(1000):
+    basemodel = DGHedging(T,S0,sigma,mu,rf,N)
+    St = basemodel.StockPriceSim()
 
-#Q2 Delta-Gamma Hedging
+    pre_delta = 0
+    money_account = 0
+    pre_call_position = 0
+    current_call_position = 0
+    current_stock_position = 0
+    current_delta = 0
+    
+    for k in range(len(St)-1):
+        if k == 0:
+            put_gamma,call_gamma,pre_call_position,call_price,put_delta,call_delta,pre_stock_position = basemodel.GammaSet(S0, 0)
+            money_account = - pre_stock_position * S0 + basemodel.putPrice(S0, 0) - call_price * pre_call_position
+
+        else:
+            put_gamma,call_gamma,current_call_position,call_price,current_delta,call_delta,current_stock_position = basemodel.GammaSet(St[k], k*T/(len(St)-1))
+            change_call_position = current_call_position - pre_call_position
+            change_stock_position = current_stock_position - pre_stock_position
+            pre_call_position = current_call_position
+            pre_stock_position = current_stock_position
+            money_account = basemodel.getBankReturn(money_account,1) - change_stock_position * St[k] - basemodel.transactionfee(change_stock_position, change_call_position)\
+                - call_price * change_call_position
+    
+    
+    call_price = basemodel.callPrice(St[-1], 0.5, 0.25)
+    if St[-1] < K:
+        money_account = basemodel.getBankReturn(money_account,1) + current_stock_position * St[-1] + current_call_position * call_price + (-K + St[-1]) - basemodel.transactionfee(current_stock_position, current_call_position)
+    else:
+        money_account = basemodel.getBankReturn(money_account,1) + current_stock_position * St[-1] + current_call_position * call_price - basemodel.transactionfee(current_delta, 0)
+
+    final_pnl.append(money_account * np.exp(-rf * T))
+    print(i)
+
+plt.hist(final_pnl,bins=50)
+
+print(basemodel.clientCharge(basemodel.cVar(final_pnl)))
+
+#Q2 Delta-Gamma move based Hedging 
+'''
+
 
 money_account = 0
 final_pnl = []
 
 
-for i in range(1000):
+for i in range(10000):
     basemodel = DGHedging(T,S0,sigma,mu,rf,N)
     St = basemodel.StockPriceSim()
 
@@ -154,7 +198,7 @@ for i in range(1000):
     pre_call_position = 0
     current_delta = 0
     current_call_position = 0
-    current_stock_position=0
+    current_stock_position = 0
     
     for k in range(len(St)-1):
         interest_days += 1
@@ -220,6 +264,7 @@ for i in range(1000):
     print(i)
     
 plt.hist(final_pnl,bins=20)
+
     
 '''
     if np.abs(money_account) < 10:
