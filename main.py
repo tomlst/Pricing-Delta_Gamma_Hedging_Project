@@ -134,12 +134,12 @@ plt.hist(final_pnl,bins=20)
 print(basemodel.clientCharge(basemodel.cVar(final_pnl)))
 '''
 
-'''
+
 #Q2 Delta-Gamma time based Hedging 
 money_account = 0
 final_pnl = []
 
-for i in range(1000):
+for i in range(10000):
     basemodel = DGHedging(T,S0,sigma,mu,rf,N)
     St = basemodel.StockPriceSim()
 
@@ -178,8 +178,9 @@ plt.hist(final_pnl,bins=50)
 
 print(basemodel.clientCharge(basemodel.cVar(final_pnl)))
 
+
+
 #Q2 Delta-Gamma move based Hedging 
-'''
 
 '''
 money_account = 0
@@ -284,6 +285,7 @@ plt.hist(final_pnl,bins=20)
 print(basemodel.clientCharge(basemodel.cVar(final_pnl)))
 '''
 
+'''
 #Q3 3 different bands for delta hedging
 
 fig, axs = plt.subplots(4, 1, figsize=(10,40))
@@ -371,6 +373,8 @@ for semiband in semibandlist:
     axs[figIndex].set_yticks(np.linspace(0, 1200,13)) 
     
     print(basemodel.clientCharge(basemodel.cVar(final_pnl)))
+    
+'''
 
 '''
 count = -1
