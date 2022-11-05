@@ -25,7 +25,7 @@ N = 91
 semiband = 0.05
 
 
-#Q1 Time-based Hedging
+#Q1 Delta Time-based Hedging
 '''
 money_account = 0
 final_pnl = []
@@ -61,7 +61,7 @@ print(basemodel.clientCharge(basemodel.cVar(final_pnl)))
 '''
 
 '''
-#Q1 Move-based Hedging
+#Q1 Delta Move-based Hedging
 money_account = 0
 final_pnl = []
 
@@ -181,7 +181,7 @@ print(basemodel.clientCharge(basemodel.cVar(final_pnl)))
 #Q2 Delta-Gamma move based Hedging 
 '''
 
-
+'''
 money_account = 0
 final_pnl = []
 
@@ -264,7 +264,7 @@ for i in range(10000):
     print(i)
     
 plt.hist(final_pnl,bins=20)
-
+'''
     
 '''
     if np.abs(money_account) < 10:
@@ -283,3 +283,88 @@ plt.hist(final_pnl,bins=20)
 
 print(basemodel.clientCharge(basemodel.cVar(final_pnl)))
 '''
+
+#Q3 3 different bands for delta hedging
+
+fig, axs = plt.subplots(4, 1, figsize=(10,40))
+
+figIndex = -1
+
+semibandlist = [0.2/2, 0.1/2, 0.05/2, 0.02/2]
+
+for semiband in semibandlist:
+    money_account = 0
+    final_pnl = []
+    figIndex += 1
+    for i in range(500):
+        basemodel = DGHedging(T,S0,sigma,mu,rf,N)
+        St = basemodel.StockPriceSim()
+        port_delta = []
+        
+        pre_delta = 0
+        money_account = 0
+        upper_band = 0
+        lower_band = 0
+        interest_days = 0
+        current_delta = 0
+        stock_position = 0
+        
+        for k in range(len(St)-1):
+            interest_days += 1
+            if k == 0:
+                pre_delta = basemodel.putDelta(S0, 0)
+                stock_position = pre_delta
+                money_account = - pre_delta * S0 + basemodel.putPrice(S0, 0) 
+                upper_band = pre_delta + semiband
+                lower_band = pre_delta - semiband
+            
+            else:
+                current_delta = basemodel.putDelta(St[k], k*T/(len(St)-1))
+    
+                if current_delta > upper_band:
+                    change_delta = current_delta - pre_delta
+                    stock_position = current_delta
+                    money_account = basemodel.getBankReturn(money_account,interest_days) - change_delta * St[k] - basemodel.transactionfee(change_delta, 0)
+                    pre_delta = current_delta
+                    upper_band = current_delta + semiband
+                    lower_band = current_delta - semiband
+                    if upper_band > 0:
+                        upper_band = 0
+                    elif lower_band < -1:
+                        lower_band = -1
+                    interest_days = 0
+    
+                        
+                elif current_delta < lower_band:
+                    change_delta = current_delta - pre_delta
+                    stock_position = current_delta
+                    money_account = basemodel.getBankReturn(money_account,interest_days) - change_delta * St[k] - basemodel.transactionfee(change_delta, 0)
+                    pre_delta = current_delta
+                    upper_band = current_delta + semiband
+                    lower_band = current_delta - semiband
+                    if upper_band > 0:
+                        upper_band = 0
+                    elif lower_band < -1:
+                        lower_band = -1
+                    interest_days = 0
+    
+    
+    
+        if St[-1] < K:
+            money_account = basemodel.getBankReturn(money_account,1) + stock_position * St[-1] + (-K + St[-1]) - basemodel.transactionfee(stock_position, 0)
+        else:
+            money_account = basemodel.getBankReturn(money_account,1) + stock_position * St[-1] - basemodel.transactionfee(stock_position, 0)
+    
+        final_pnl.append(money_account*np.exp(-rf * 0.25))
+        if np.abs(money_account) > 2:
+            print(current_delta,St[-1],money_account,i,k)
+        print(i)
+    
+    axs[figIndex].hist(final_pnl,bins=20)
+    plt.subplot(4,1,figIndex+1).set_title(f'Band size: {semiband*2}')
+    axs[figIndex].set_xticks(np.linspace(-2, 2,41)) 
+    axs[figIndex].set_xticklabels([round(i,2) for i in np.linspace(-2, 2,41)],rotation=45)
+    
+    print(basemodel.clientCharge(basemodel.cVar(final_pnl)))
+
+fig.show()
