@@ -41,14 +41,14 @@ class DGHedging:
     def putDelta(self, St, t):
         return norm.cdf(self.dplus(St, t)) - 1
     
-    def callDelta(self, St, maturity, t):
-        return norm.cdf(self.dplusCall(St, maturity, t))
-    
     def putPrice(self, St, t):
         return self.K * np.exp(-self.rf*(self.T - t)) * norm.cdf(- self.dminus(St, t)) - St * norm.cdf(-self.dplus(St, t))
     
+    def callDelta(self, St, maturity, t):
+        return norm.cdf(self.dplusCall(St, maturity, t))
+    
     def callPrice(self, St, maturity, t):
-        return St * norm.cdf(self.dplusCall(St,0.5, t)) - self.K * np.exp(-self.rf*(maturity - t)) * norm.cdf(self.dminusCall(St, 0.5, t))
+        return St * norm.cdf(self.dplusCall(St,maturity, t)) - self.K * np.exp(-self.rf*(maturity - t)) * norm.cdf(self.dminusCall(St, maturity, t))
     
     def dplusCall(self, St, maturity,t):
         return (np.log(St/self.K) + ((self.rf + 0.5 * self.sigma**2) * (maturity - t))) \
@@ -70,7 +70,7 @@ class DGHedging:
     def cVar(self, final_pnl):
         tenpercentile = np.quantile(final_pnl,0.1)
         leasttenpercentlist = [i for i in final_pnl if i <=tenpercentile]
-        return np.array(leasttenpercentlist).mean() / np.exp(-self.rf * self.T)
+        return np.array(leasttenpercentlist).mean()
     
     def clientCharge(self, cVar):
         return - cVar - 0.02 + self.putPrice(100, 0)

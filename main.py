@@ -134,7 +134,7 @@ plt.title('Delta Move-based Hedging')
 print(basemodel.clientCharge(basemodel.cVar(final_pnl)))
 '''
 
-
+'''
 #Q2 Delta-Gamma time based Hedging 
 money_account = 0
 final_pnl = []
@@ -179,17 +179,17 @@ plt.hist(final_pnl,bins=50)
 plt.title('Delta-Gamma time based Hedging')
 clean = [x for x in final_pnl if str(x) != 'nan']
 print(basemodel.clientCharge(basemodel.cVar(clean)))
-
+'''
 
 
 #Q2 Delta-Gamma move based Hedging 
 
-'''
+
 money_account = 0
 final_pnl = []
 
 
-for i in range(10000):
+for i in range(1):
     basemodel = DGHedging(T,S0,sigma,mu,rf,N)
     St = basemodel.StockPriceSim()
 
@@ -226,7 +226,6 @@ for i in range(10000):
                     
                 pre_stock_position = current_stock_position
                 pre_call_position = current_call_position
-                
                 upper_band = current_delta + semiband
                 lower_band = current_delta - semiband
                 if upper_band > 0:
@@ -236,7 +235,6 @@ for i in range(10000):
                 interest_days = 0
 
 
-                    
             elif current_delta < lower_band:
                 put_gamma,call_gamma,current_call_position,call_price,put_delta,call_delta,current_stock_position = basemodel.GammaSet(St[k], k*T/(len(St)-1))
                 
@@ -249,12 +247,11 @@ for i in range(10000):
                 pre_call_position = current_call_position
                 upper_band = current_delta + semiband
                 lower_band = current_delta - semiband
-                    
                 if upper_band > 0:
                     upper_band = 0
                 elif lower_band < -1:
                     lower_band = -1
-                interest_days = 0            
+                interest_days = 0           
 
 
     call_price = basemodel.callPrice(St[-1], 0.5,0.25)    
@@ -274,7 +271,7 @@ plt.title('Delta-Gamma move based Hedging ')
 
 print(basemodel.clientCharge(basemodel.cVar(final_pnl)))
 
-'''
+
 
 '''
 #Q3 3 different bands for delta hedging
