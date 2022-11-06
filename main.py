@@ -134,14 +134,14 @@ plt.title('Delta Move-based Hedging')
 print(basemodel.clientCharge(basemodel.cVar(final_pnl)))
 '''
 
-'''
+
 #Q2 Delta-Gamma time based Hedging 
 money_account = 0
 final_pnl = []
 
 temp = []
 
-for i in range(1000):
+for i in range(10000):
     basemodel = DGHedging(T,S0,sigma,mu,rf,N)
     St = basemodel.StockPriceSim()
 
@@ -180,11 +180,11 @@ plt.title('Delta-Gamma time based Hedging')
 clean = [x for x in final_pnl if str(x) != 'nan']
 print(basemodel.clientCharge(basemodel.cVar(clean)))
 
-'''
+
 
 #Q2 Delta-Gamma move based Hedging 
 
-
+'''
 money_account = 0
 final_pnl = []
 
@@ -274,6 +274,7 @@ plt.title('Delta-Gamma move based Hedging ')
 
 print(basemodel.clientCharge(basemodel.cVar(final_pnl)))
 
+'''
 
 '''
 #Q3 3 different bands for delta hedging
