@@ -55,8 +55,8 @@ for i in range(10000):
     final_pnl.append(money_account * np.exp(-rf * 0.25))
     print(i)
 
-plt.hist(final_pnl,bins=20)
-
+plt.hist(final_pnl,bins=50)
+plt.title('Delta Time-based Hedging')
 print(basemodel.clientCharge(basemodel.cVar(final_pnl)))
 '''
 
@@ -130,16 +130,18 @@ for i in range(10000):
     print(i)
 
 plt.hist(final_pnl,bins=20)
-
+plt.title('Delta Move-based Hedging')
 print(basemodel.clientCharge(basemodel.cVar(final_pnl)))
 '''
 
-
+'''
 #Q2 Delta-Gamma time based Hedging 
 money_account = 0
 final_pnl = []
 
-for i in range(10000):
+temp = []
+
+for i in range(1000):
     basemodel = DGHedging(T,S0,sigma,mu,rf,N)
     St = basemodel.StockPriceSim()
 
@@ -164,25 +166,25 @@ for i in range(10000):
             money_account = basemodel.getBankReturn(money_account,1) - change_stock_position * St[k] - basemodel.transactionfee(change_stock_position, change_call_position)\
                 - call_price * change_call_position
     
-    
     call_price = basemodel.callPrice(St[-1], 0.5, 0.25)
     if St[-1] < K:
         money_account = basemodel.getBankReturn(money_account,1) + current_stock_position * St[-1] + current_call_position * call_price + (-K + St[-1]) - basemodel.transactionfee(current_stock_position, current_call_position)
     else:
-        money_account = basemodel.getBankReturn(money_account,1) + current_stock_position * St[-1] + current_call_position * call_price - basemodel.transactionfee(current_delta, 0)
+        money_account = basemodel.getBankReturn(money_account,1) + current_stock_position * St[-1] + current_call_position * call_price - basemodel.transactionfee(current_delta, current_call_position)
 
     final_pnl.append(money_account * np.exp(-rf * T))
     print(i)
 
 plt.hist(final_pnl,bins=50)
+plt.title('Delta-Gamma time based Hedging')
+clean = [x for x in final_pnl if str(x) != 'nan']
+print(basemodel.clientCharge(basemodel.cVar(clean)))
 
-print(basemodel.clientCharge(basemodel.cVar(final_pnl)))
-
-
+'''
 
 #Q2 Delta-Gamma move based Hedging 
 
-'''
+
 money_account = 0
 final_pnl = []
 
@@ -259,31 +261,19 @@ for i in range(10000):
     if St[-1] < K:
         money_account = basemodel.getBankReturn(money_account, interest_days) + current_stock_position * St[-1] + (-K + St[-1]) - basemodel.transactionfee(current_delta, 0) + current_call_position * call_price
     else:
-        money_account = basemodel.getBankReturn(money_account, interest_days) + current_stock_position * St[-1] - basemodel.transactionfee(current_delta, 0) + current_call_position * call_price
+        money_account = basemodel.getBankReturn(money_account, interest_days) + current_stock_position * St[-1] - basemodel.transactionfee(current_delta, current_call_position) + current_call_position * call_price
 
     final_pnl.append(money_account*np.exp(-rf * 0.25))
     print(i)
     
-plt.hist(final_pnl,bins=20)
-'''
-    
-'''
-    if np.abs(money_account) < 10:
-        upper = []
-        lower = []
-        current = []
-        call_poi = []
-        stock_poi = []
-        delta=[]
-        gamma=[]
-    else:
-        break
+plt.hist(final_pnl,bins=50)
+plt.title('Delta-Gamma move based Hedging ')
 
-plt.hist(final_pnl,bins=20)
+
 
 
 print(basemodel.clientCharge(basemodel.cVar(final_pnl)))
-'''
+
 
 '''
 #Q3 3 different bands for delta hedging
@@ -392,4 +382,4 @@ for i in res_array:
     plt.legend([0.1,0.05,0.02,0.01,],loc="upper right",prop={'size': 10})
 '''
 
-fig.show()
+#fig.show()

@@ -59,7 +59,7 @@ class DGHedging:
     /(self.sigma * np.sqrt(maturity - t))
     
     def Gamma(self, St, t, maturity):
-        return (norm.pdf(self.dplus(St, t)))/(self.sigma*St*np.sqrt(maturity-t))
+        return (norm.pdf(self.dplusCall(St, maturity, t)))/(self.sigma*St*np.sqrt(maturity-t))
     
     def transactionfee(self, changeDelta, changeOption):
         return np.abs(changeDelta) * 0.005 + np.abs(changeOption) * 0.01
