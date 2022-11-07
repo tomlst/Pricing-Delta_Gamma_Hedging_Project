@@ -9,7 +9,7 @@ import random
 import numpy as np
 from scipy.stats import norm
 
-random.seed(123)
+random.seed(1943)
 class DGHedging:
     def __init__(self,T,S0,sigma,mu,rf,N):
         self.T = T
