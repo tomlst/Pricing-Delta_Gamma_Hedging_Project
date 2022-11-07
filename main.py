@@ -169,7 +169,6 @@ plt.title('Delta-Gamma time based Hedging')
 print(basemodel.clientCharge(basemodel.cVar(final_pnl)))
 '''
 
-'''
 #Q2 Delta-Gamma move based Hedging 
 
 money_account = 0
@@ -190,6 +189,7 @@ for i in range(10000):
     current_delta = 0
     current_call_position = 0
     current_stock_position = 0
+    flag = 0
     for k in range(len(St)-1):
         interest_days += 1
         if k == 0:
@@ -202,7 +202,7 @@ for i in range(10000):
         
         else:
             current_delta = basemodel.putDelta(St[k], k*T/N)
-            if (current_delta > upper_band or current_delta < lower_band) and current_delta >= -0.99 and current_delta <= -0.01:
+            if (current_delta > upper_band or current_delta < lower_band):
                 put_gamma,call_gamma,current_call_position,call_price,current_delta,call_delta,current_stock_position = basemodel.GammaSet(St[k], k*T/(len(St)-1))
                 change_call_position = current_call_position - pre_call_position
                 change_stock_position = current_stock_position - pre_stock_position
@@ -212,11 +212,16 @@ for i in range(10000):
                 pre_call_position = current_call_position
                 upper_band = current_delta + semiband
                 lower_band = current_delta - semiband
-                if upper_band > 0:
-                    upper_band = 0
-                elif lower_band < -1:
-                    lower_band = -1
+                if upper_band > -0.01 and flag == 0:
+                    upper_band = -0.01
+                    flag = 1
+                elif lower_band < -0.99 and flag == 0:
+                    lower_band = -0.99
+                    flag = 1
+                if flag == 1 and (current_delta > upper_band or current_delta < lower_band):
+                    flag = 0
                 interest_days = 0
+            
 
     call_price = basemodel.callPrice(St[-1], 0.5,0.25)    
     if St[-1] < K:
@@ -234,7 +239,6 @@ sns.kdeplot(final_pnl)
 
 
 print(basemodel.clientCharge(basemodel.cVar(final_pnl)))
-'''
 
 
 '''
