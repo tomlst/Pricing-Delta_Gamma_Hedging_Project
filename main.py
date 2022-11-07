@@ -9,6 +9,9 @@ import random
 import numpy as np
 from DGHedging import DGHedging
 import matplotlib.pyplot as plt
+from sklearn.neighbors import KernelDensity
+import seaborn as sns
+import pandas as pd
 
 random.seed(123)
 #Assume one year is 252 days, so we use 0.25 year as 63 days.
@@ -129,7 +132,7 @@ for i in range(10000):
         print(current_delta,St[-1],money_account,i,k)
     print(i)
 
-plt.hist(final_pnl,bins=20)
+plt.hist(final_pnl,bins=50)
 plt.title('Delta Move-based Hedging')
 print(basemodel.clientCharge(basemodel.cVar(final_pnl)))
 '''
@@ -184,12 +187,12 @@ print(basemodel.clientCharge(basemodel.cVar(clean)))
 
 #Q2 Delta-Gamma move based Hedging 
 
-
 money_account = 0
 final_pnl = []
+money = []
 
 
-for i in range(1):
+for i in range(1000):
     basemodel = DGHedging(T,S0,sigma,mu,rf,N)
     St = basemodel.StockPriceSim()
 
@@ -202,22 +205,22 @@ for i in range(1):
     current_delta = 0
     current_call_position = 0
     current_stock_position = 0
-    
     for k in range(len(St)-1):
         interest_days += 1
         if k == 0:
             put_gamma,call_gamma,pre_call_position,call_price,put_delta,call_delta,pre_stock_position = basemodel.GammaSet(S0, 0)
+            put_gamma,call_gamma,current_call_position,call_price,put_delta,call_delta,current_stock_position = basemodel.GammaSet(S0, 0)
             #put_gamma here should be negative, call_gamma should be positive, since we short the put, so we short the call. 
             
             pre_delta = put_delta
-            money_account = - pre_stock_position * S0 + basemodel.putPrice(S0, 0) - call_price * pre_call_position
+            money_account = - pre_stock_position * S0 + basemodel.putPrice(S0, 0) - call_price * pre_call_position - basemodel.transactionfee(pre_stock_position, pre_call_position)
             
             upper_band = pre_delta + semiband
             lower_band = pre_delta - semiband
         
         else:
-            current_delta = basemodel.putDelta(St[k], k*0.25/91)
-            if current_delta > upper_band:
+            current_delta = basemodel.putDelta(St[k], k*T/N)
+            if current_delta > upper_band and current_delta >= -0.99 and current_delta <= -0.01:
                 put_gamma,call_gamma,current_call_position,call_price,current_delta,call_delta,current_stock_position = basemodel.GammaSet(St[k], k*T/(len(St)-1))
                 change_call_position = current_call_position - pre_call_position
                 change_stock_position = current_stock_position - pre_stock_position
@@ -235,8 +238,8 @@ for i in range(1):
                 interest_days = 0
 
 
-            elif current_delta < lower_band:
-                put_gamma,call_gamma,current_call_position,call_price,put_delta,call_delta,current_stock_position = basemodel.GammaSet(St[k], k*T/(len(St)-1))
+            elif current_delta < lower_band and current_delta >= -0.99 and current_delta <= -0.01:
+                put_gamma,call_gamma,current_call_position,call_price,current_delta,call_delta,current_stock_position = basemodel.GammaSet(St[k], k*T/(len(St)-1))
                 
                 change_call_position = current_call_position - pre_call_position
                 change_stock_position = current_stock_position - pre_stock_position
@@ -251,22 +254,22 @@ for i in range(1):
                     upper_band = 0
                 elif lower_band < -1:
                     lower_band = -1
-                interest_days = 0           
+                interest_days = 0
 
 
     call_price = basemodel.callPrice(St[-1], 0.5,0.25)    
     if St[-1] < K:
-        money_account = basemodel.getBankReturn(money_account, interest_days) + current_stock_position * St[-1] + (-K + St[-1]) - basemodel.transactionfee(current_delta, 0) + current_call_position * call_price
+        money_account = basemodel.getBankReturn(money_account, interest_days) + current_stock_position * St[-1] + (-K + St[-1]) - basemodel.transactionfee(current_delta, current_call_position) + current_call_position * call_price
     else:
         money_account = basemodel.getBankReturn(money_account, interest_days) + current_stock_position * St[-1] - basemodel.transactionfee(current_delta, current_call_position) + current_call_position * call_price
 
     final_pnl.append(money_account*np.exp(-rf * 0.25))
     print(i)
-    
-plt.hist(final_pnl,bins=50)
+   
+
+plt.hist(final_pnl,bins=50,density=True)
 plt.title('Delta-Gamma move based Hedging ')
-
-
+sns.kdeplot(final_pnl)
 
 
 print(basemodel.clientCharge(basemodel.cVar(final_pnl)))
@@ -362,9 +365,9 @@ for semiband in semibandlist:
     
     print(basemodel.clientCharge(basemodel.cVar(final_pnl)))
     
-'''
 
-'''
+
+
 count = -1
 plt.figure(figsize=(16,8))
 
@@ -378,6 +381,7 @@ for i in res_array:
     axs[figIndex].set_xticks(np.linspace(-3, 2,26)) 
     axs[figIndex].set_xticklabels([i for i in np.linspace(-3, 2,26)],rotation=45)
     plt.legend([0.1,0.05,0.02,0.01,],loc="upper right",prop={'size': 10})
-'''
 
-#fig.show()
+
+fig.show()
+'''
