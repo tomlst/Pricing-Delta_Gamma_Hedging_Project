@@ -27,9 +27,9 @@ rf = 0.02
 N = 91
 semiband = 0.05
 
-
-#Q1 Delta Time-based Hedging
 '''
+#Q1 Delta Time-based Hedging
+
 money_account = 0
 final_pnl = []
 
@@ -63,12 +63,13 @@ plt.title('Delta Time-based Hedging')
 print(basemodel.clientCharge(basemodel.cVar(final_pnl)))
 '''
 
-
+'''
 #Q1 Delta Move-based Hedging
 money_account = 0
 final_pnl = []
+record = []
 
-for i in range(1000):
+for i in range(10000):
     basemodel = DGHedging(T,S0,sigma,mu,rf,N)
     St = basemodel.StockPriceSim()    
     pre_delta = 0
@@ -107,6 +108,7 @@ for i in range(1000):
                     flag = 1
                 if flag == 1 and (current_delta > upper_band or current_delta < lower_band):
                     flag = 0
+            record.append(stock_position - current_delta)
     print(i)
 
 
@@ -120,7 +122,7 @@ for i in range(1000):
 plt.hist(final_pnl,bins=50)
 plt.title('Delta Move-based Hedging')
 print(basemodel.clientCharge(basemodel.cVar(final_pnl)))
-
+'''
 
 '''
 #Q2 Delta-Gamma time based Hedging 
@@ -242,7 +244,7 @@ sns.kdeplot(final_pnl)
 print(basemodel.clientCharge(basemodel.cVar(final_pnl)))
 '''
 
-'''
+
 #Q3 3 different bands for delta hedging
 
 fig, axs = plt.subplots(4, 1, figsize=(10,40))
@@ -350,4 +352,3 @@ for i in res_array:
 
 
 fig.show()
-'''
