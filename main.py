@@ -198,7 +198,6 @@ for i in range(10000):
             current_call_position = pre_call_position
             current_stock_position = pre_stock_position
         else:
-            record.append([current_delta,money_account,current_call_position,current_stock_position])
             current_delta = pre_stock_position - basemodel.putDelta(St[k], k*T/N) + basemodel.callDelta(St[k], 0.5, k*0.25/91) * pre_call_position
             if (np.abs(current_delta) > 0.05):
                 put_gamma,call_gamma,current_call_position,call_price,current_delta,call_delta,current_stock_position = basemodel.GammaSet(St[k], k*T/(len(St)-1))
