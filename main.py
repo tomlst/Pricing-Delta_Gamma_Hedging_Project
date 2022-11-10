@@ -176,7 +176,6 @@ print(basemodel.clientCharge(basemodel.cVar(final_pnl)))
 money_account = 0
 final_pnl = []
 money = []
-record = []
 for i in range(10000):
     basemodel = DGHedging(T,S0,sigma,mu,rf,N)
     St = basemodel.StockPriceSim()
@@ -219,11 +218,6 @@ for i in range(10000):
     else:
         money_account = basemodel.getBankReturn(money_account, interest_days) + current_stock_position * St[-1] - basemodel.transactionfee(current_delta, current_call_position) + current_call_position * call_price
     final_pnl.append(money_account*np.exp(-rf * 0.25))
-    
-    print(i)
-    if final_pnl[-1]>100:
-        break
-    record=[]
     
    
 plt.hist(final_pnl,bins=50,density=True)
