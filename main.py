@@ -188,7 +188,8 @@ for i in range(10000):
     current_delta = 0
     current_call_position = 0
     current_stock_position = 0
-    flag = 0
+    portfolio_delta = 0
+    
     for k in range(len(St)-1):
         interest_days += 1
         if k == 0:
@@ -197,10 +198,14 @@ for i in range(10000):
             money_account = - pre_stock_position * S0 + basemodel.putPrice(S0, 0) - call_price * pre_call_position - basemodel.transactionfee(pre_stock_position, pre_call_position)
             current_call_position = pre_call_position
             current_stock_position = pre_stock_position
+            
+            current_put_delta = basemodel.putDelta(St[0], 0)
+            current_call_delta = basemodel.callDelta(St[0], 0.5, 0)
+            
         else:
-            current_delta = pre_stock_position - basemodel.putDelta(St[k], k*T/N) + basemodel.callDelta(St[k], 0.5, k*0.25/91) * pre_call_position
-            if (np.abs(current_delta) > 0.05):
-                put_gamma,call_gamma,current_call_position,call_price,current_delta,call_delta,current_stock_position = basemodel.GammaSet(St[k], k*T/(len(St)-1))
+            portfolio_delta = pre_stock_position - basemodel.putDelta(St[k], k*T/N) + basemodel.callDelta(St[k], 0.5, k*0.25/91) * pre_call_position
+            if (np.abs(portfolio_delta) > 0.05):
+                put_gamma,call_gamma,current_call_position,call_price,current_put_delta,current_call_delta,current_stock_position = basemodel.GammaSet(St[k], k*T/(len(St)-1))
                 change_call_position = current_call_position - pre_call_position
                 change_stock_position = current_stock_position - pre_stock_position
                 money_account = basemodel.getBankReturn(money_account,interest_days) - change_stock_position * St[k] - basemodel.transactionfee(change_stock_position, change_call_position)\
@@ -209,8 +214,12 @@ for i in range(10000):
                 pre_call_position = current_call_position
                 interest_days = 0
         
+        pre_put_delta = current_put_delta
+        pre_call_delta = current_call_delta
+        current_put_delta = basemodel.putDelta(St[k], k*0.25/91)
+        current_call_delta = basemodel.callDelta(St[k], 0.5, k*0.25/91)
+    print(i)
         
-            
     call_price = basemodel.callPrice(St[-1], 0.5,0.25)    
     if St[-1] < K:
         money_account = basemodel.getBankReturn(money_account, interest_days) + current_stock_position * St[-1] + (-K + St[-1]) - basemodel.transactionfee(current_delta, current_call_position) + current_call_position * call_price
